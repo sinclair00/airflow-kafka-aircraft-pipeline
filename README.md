@@ -30,4 +30,29 @@ Open Airflow UI:
 * Kafka runs with internal/external listeners
 * Data stored in `/opt/airflow/data`
 
+## Pipeline Results
+
+### Airflow Execution
+![Airflow DAG Success](docs/images/airflow_success.png)
+
+### Sample Outputs
+
+**Raw Events (Kafka → JSONL)**
+- docs/samples/raw_events_sample.jsonl
+
+**Curated Dataset**
+- docs/samples/curated_events_sample.csv
+
+**Daily Summary**
+- docs/samples/summary_report_sample.csv
+
+**Validation Report**
+- docs/samples/validation_report.txt
+
+The pipeline processes aircraft maintenance events through:
+
+- Raw ingestion from Kafka
+- Validation and cleansing
+- Transformation into curated datasets
+- Aggregation into daily summaries
 ````

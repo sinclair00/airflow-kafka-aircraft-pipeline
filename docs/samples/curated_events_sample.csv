@@ -1,0 +1,20 @@
+event_id,event_ts,aircraft_id,tail_number,component,event_type,severity,status,location,technician_id,hours_since_last_service,notes,event_date
+b35b35b7-9966-4aa0-b6b5-450a72eea6e0,2026-03-28 05:54:30.046428+00:00,AC-8469,N854BA,engine,replacement,high,closed,Seattle,TECH-685,346,simulated maintenance event,3/28/2026
+30b9d4a0-08ae-4099-a36b-839f0623d9a5,2026-03-28 05:54:30.150814+00:00,AC-8443,N741BA,fuel_system,replacement,medium,in_progress,San Diego,TECH-745,466,simulated maintenance event,3/28/2026
+b20c543a-68c8-4429-a45f-201e47b2f0b0,2026-03-28 05:54:30.150939+00:00,AC-7519,N872BA,landing_gear,repair,medium,closed,Everett,TECH-932,298,simulated maintenance event,3/28/2026
+a6de3e2d-b81e-47d6-846b-3f56e724445e,2026-03-28 05:54:30.151003+00:00,AC-4536,N181BA,engine,replacement,low,open,Mesa,TECH-293,113,simulated maintenance event,3/28/2026
+505db023-273c-458c-9fd8-cae30c13b570,2026-03-28 05:54:30.151075+00:00,AC-2808,N631BA,hydraulics,alert,medium,in_progress,Everett,TECH-983,431,simulated maintenance event,3/28/2026
+9ae2791b-8027-4ca2-8c08-40aa090e6c43,2026-03-28 05:54:30.151122+00:00,AC-9584,N711BA,avionics,replacement,medium,open,San Diego,TECH-545,342,simulated maintenance event,3/28/2026
+f72ec5e2-eb89-4a7c-81e3-48c131f745cd,2026-03-28 05:54:30.151152+00:00,AC-3478,N872BA,fuel_system,alert,high,open,San Diego,TECH-590,342,simulated maintenance event,3/28/2026
+528b1630-11ef-492f-ab62-786f90f97412,2026-03-28 05:54:30.151196+00:00,AC-6331,N256BA,engine,replacement,medium,open,Seattle,TECH-645,92,simulated maintenance event,3/28/2026
+ac25067e-ecf2-4b3a-964c-a04ad8d426ab,2026-03-28 05:54:30.151241+00:00,AC-1227,N240BA,engine,inspection,high,open,Seattle,TECH-671,368,simulated maintenance event,3/28/2026
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,

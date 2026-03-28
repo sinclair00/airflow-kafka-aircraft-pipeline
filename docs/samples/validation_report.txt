@@ -1,0 +1,12 @@
+Validated file: /opt/airflow/data/raw/events_20260328_055430.jsonl
+Row count: 100
+Duplicate event_id count: 0
+Null counts:
+event_id       0
+event_ts       0
+aircraft_id    0
+component      0
+event_type     0
+severity       0
+status         0
+location       0
