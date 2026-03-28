@@ -25,6 +25,10 @@ docker compose up -d
 Open Airflow UI:
 [http://localhost:8080](http://localhost:8080)
 
+## Architecture
+
+![Architecture](docs/images/architecture_diagram.png)
+
 ## Notes
 
 * Kafka runs with internal/external listeners
