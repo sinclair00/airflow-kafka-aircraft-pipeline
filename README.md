@@ -1,7 +1,7 @@
-````markdown
-# Airflow Kafka Aircraft Maintenance Pipeline
+# Aircraft Maintenance Data Pipeline (Kafka + Airflow)
 
-Streaming + batch data pipeline that ingests aircraft maintenance events via Kafka and processes them into validated, curated, and aggregated datasets using Airflow.
+Streaming + batch data pipeline that ingests aircraft maintenance events 
+via Kafka and processes them into validated, curated, and aggregated datasets using Airflow.
 
 ---
 
@@ -31,12 +31,18 @@ docker compose up -d
 ```
 
 Open Airflow UI:
-http://localhost:8080
+[Open Airflow UI](http://localhost:8080)
 
 ## Architecture
 
-![Architecture](docs/images/architecture_diagram.png)
-The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) using a medallion architecture (Bronze → Silver → Gold).
+This architecture integrates real-time event streaming with scheduled batch
+processing, enabling scalable data ingestion and transformation.
+
+<p align="center">
+  <img src="docs/images/architecture_diagram.png" width="700">
+</p>
+The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) 
+using a medallion architecture (Bronze → Silver → Gold).
 
 ## Notes
 
@@ -76,4 +82,10 @@ The pipeline processes aircraft maintenance events through:
 - Implements medallion architecture (Bronze → Silver → Gold)
 - Uses Docker Compose for reproducible local deployment
 - Integrates Kafka streaming with Airflow orchestration
-````
+
+## Challenges & Lessons Learned
+
+- Resolved Kafka `NoBrokersAvailable` via advertised listeners configuration
+- Fixed Docker container networking between Airflow and Kafka
+- Addressed file path inconsistencies using absolute container paths
+- Resolved permission issues with mounted volumes
