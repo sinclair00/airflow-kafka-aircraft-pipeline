@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Airflow
+logs/
+*.log
+
+# Data outputs
+data/
+*.json
+*.jsonl
+
+# Env / secrets
+.env
+
+# OS
+.DS_Store
+
+# Docker
+*.pid
