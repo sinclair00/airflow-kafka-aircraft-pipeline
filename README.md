@@ -1,33 +1,42 @@
 ````markdown
 # Airflow Kafka Aircraft Maintenance Pipeline
 
-End-to-end data pipeline using:
+Streaming + batch data pipeline that ingests aircraft maintenance events via Kafka and processes them into validated, curated, and aggregated datasets using Airflow.
 
-- Apache Airflow
-- Apache Kafka
-- Docker Compose
-- Python
+---
+
+## Tech Stack
+
+- Apache Airflow – orchestration
+- Apache Kafka – streaming ingestion
+- Docker Compose – containerized environment
+- Python – data processing scripts
+- Postgres – Airflow metadata database
 
 ## Pipeline
 
-1. Producer → sends aircraft events to Kafka
-2. Consumer → reads events and stores raw data
-3. Validator → validates raw events
-4. Transformer → builds curated dataset
-5. Summary → generates report
+1. **Producer** – publishes aircraft maintenance events to Kafka
+2. **Kafka Broker** – streams event data via topic `aircraft_maintenance_events`
+3. **Consumer** – ingests events and writes raw JSONL files (Bronze layer)
+4. **Validation** – checks data quality and schema compliance
+5. **Transformation** – converts raw data into curated CSV datasets (Silver layer)
+6. **Aggregation** – generates summary reports (Gold layer)
 
 ## Run
 
+Start the full pipeline:
+
 ```bash
 docker compose up -d
-````
+```
 
 Open Airflow UI:
-[http://localhost:8080](http://localhost:8080)
+http://localhost:8080
 
 ## Architecture
 
 ![Architecture](docs/images/architecture_diagram.png)
+The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) using a medallion architecture (Bronze → Silver → Gold).
 
 ## Notes
 
@@ -41,17 +50,17 @@ Open Airflow UI:
 
 ### Sample Outputs
 
-**Raw Events (Kafka → JSONL)**
-- docs/samples/raw_events_sample.jsonl
+### Raw Events (Kafka → JSONL)
+- [Raw Events Sample](docs/samples/raw_events_sample.jsonl)
 
-**Curated Dataset**
-- docs/samples/curated_events_sample.csv
+### Curated Dataset
+- [Curated Dataset Sample](docs/samples/curated_events_sample.csv)
 
-**Daily Summary**
-- docs/samples/summary_report_sample.csv
+### Daily Summary
+- [Daily Summary Sample](docs/samples/summary_report_sample.csv)
 
-**Validation Report**
-- docs/samples/validation_report.txt
+### Validation Report
+- [Validation Report Sample](docs/samples/validation_report.txt)
 
 The pipeline processes aircraft maintenance events through:
 
@@ -59,4 +68,12 @@ The pipeline processes aircraft maintenance events through:
 - Validation and cleansing
 - Transformation into curated datasets
 - Aggregation into daily summaries
+
+
+## Highlights
+
+- Demonstrates real-time + batch hybrid data pipeline design
+- Implements medallion architecture (Bronze → Silver → Gold)
+- Uses Docker Compose for reproducible local deployment
+- Integrates Kafka streaming with Airflow orchestration
 ````
