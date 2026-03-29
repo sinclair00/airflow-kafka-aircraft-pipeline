@@ -39,7 +39,7 @@ This architecture integrates real-time event streaming with scheduled batch
 processing, enabling scalable data ingestion and transformation.
 
 <p align="center">
-  <img src="docs/images/architecture_diagram.png" width="700">
+  <img src="docs/images/architecture_diagram.svg" width="700">
 </p>
 The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) 
 using a medallion architecture (Bronze → Silver → Gold).
