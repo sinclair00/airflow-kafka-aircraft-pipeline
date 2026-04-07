@@ -31,6 +31,7 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      
 
   airflow-init:
     build: .
@@ -40,7 +41,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"  
+      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_RAW_PREFIX: ${S3_RAW_PREFIX}
+      S3_BRONZE_PREFIX: ${S3_BRONZE_PREFIX}
+      S3_GOLD_PREFIX: ${S3_GOLD_PREFIX}  
     command: >
       bash -c "airflow db migrate &&
       airflow users create --username airflow --password airflow --firstname Don --lastname Sinclair --role Admin --email sinclair00@gmail.com"
@@ -61,7 +69,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"  
+      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_RAW_PREFIX: ${S3_RAW_PREFIX}
+      S3_BRONZE_PREFIX: ${S3_BRONZE_PREFIX}
+      S3_GOLD_PREFIX: ${S3_GOLD_PREFIX}  
     command: webserver
     volumes:
       - ./dags:/opt/airflow/dags
@@ -78,7 +93,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"  
+      AIRFLOW__WEBSERVER__SECRET_KEY: "my_super_secret_key_123"
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_RAW_PREFIX: ${S3_RAW_PREFIX}
+      S3_BRONZE_PREFIX: ${S3_BRONZE_PREFIX}
+      S3_GOLD_PREFIX: ${S3_GOLD_PREFIX}  
     command: scheduler
     volumes:
       - ./dags:/opt/airflow/dags
