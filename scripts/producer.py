@@ -3,6 +3,13 @@ import random
 import uuid
 from datetime import datetime, timezone
 from kafka import KafkaProducer
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -10,6 +17,8 @@ def main():
         bootstrap_servers="kafka:29092",
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     )
+
+    logger.info("Producer processing started")
 
     try:
         components = ["hydraulics", "engine", "avionics", "landing_gear", "fuel_system"]
@@ -31,18 +40,17 @@ def main():
                 "location": random.choice(locations),
                 "technician_id": f"TECH-{random.randint(100, 999)}",
                 "hours_since_last_service": random.randint(1, 500),
-                "notes": "simulated maintenance event"
+                "notes": "simulated maintenance event",
             }
-            producer.send("aircraft_maintenance_events", event)
 
+        producer.send("aircraft_maintenance_events", event)
         producer.flush()
-        print("Produced 100 events.")
+        logger.info("Produced 100 events")
         pass
-        
+
     finally:
         producer.close()
 
+
 if __name__ == "__main__":
     main()
-    
-

@@ -3,9 +3,18 @@ import os
 import boto3
 from datetime import datetime
 from kafka import KafkaConsumer
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 
 def main():
+
+    logger.info("Starting consumer process")
 
     s3 = boto3.client("s3")
 
@@ -39,10 +48,10 @@ def main():
 
             s3.put_object(Bucket=bucket, Key=s3_key, Body=payload.encode("utf-8"))
 
-            print(f"Wrote {count} events to s3://{bucket}/{s3_key}")
+            logger.info("Wrote %d events to s3://%s/%s", count, bucket, s3_key)
 
         else:
-            print("No events consumed; nothing written to S3.")
+            logger.info("No events consumed during this run; skipping S3 write.")
 
     finally:
         consumer.close()

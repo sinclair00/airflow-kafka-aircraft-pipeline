@@ -2,6 +2,16 @@ import glob
 import json
 import os
 import pandas as pd
+import boto3
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
+logger.info("Starting transform_events")
 
 raw_files = sorted(glob.glob("/opt/airflow/data/raw/*.jsonl"))
 if not raw_files:
@@ -22,4 +32,4 @@ os.makedirs("/opt/airflow/data/curated", exist_ok=True)
 outfile = "/opt/airflow/data/curated/maintenance_events.csv"
 df.to_csv(outfile, index=False)
 
-print(f"Curated data written to {outfile}")
+logger.info("Curated data written to %s", outfile)
