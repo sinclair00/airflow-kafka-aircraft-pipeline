@@ -43,15 +43,15 @@ def main():
             lines.append(json.dumps(event))
             count += 1
 
-        if lines:
-            payload = "\n".join(lines) + "\n"
+            if lines:
+                payload = "\n".join(lines) + "\n"
 
-            s3.put_object(Bucket=bucket, Key=s3_key, Body=payload.encode("utf-8"))
+                s3.put_object(Bucket=bucket, Key=s3_key, Body=payload.encode("utf-8"))
 
-            logger.info("Wrote %d events to s3://%s/%s", count, bucket, s3_key)
+                logger.info("Wrote %d events to s3://%s/%s", count, bucket, s3_key)
 
-        else:
-            logger.info("No events consumed during this run; skipping S3 write.")
+            else:
+                logger.info("No events consumed during this run; skipping S3 write.")
 
     finally:
         consumer.close()
