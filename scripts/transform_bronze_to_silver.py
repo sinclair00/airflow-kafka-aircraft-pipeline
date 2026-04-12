@@ -32,12 +32,17 @@ df = pd.read_csv(StringIO(content))
 if df.empty:
     raise ValueError(f"Bronze file is empty: s3://{S3_BUCKET_NAME}/{BRONZE_KEY}")
 
+initial_count = len(df)
+
 df["event_ts"] = pd.to_datetime(df["event_ts"], errors="coerce")
 
 # Silver = cleaned, deduplicated, analytics-ready
 df = df.drop_duplicates(subset=["event_id"]).copy()
 df = df[df["event_ts"].notna()].copy()
 df["event_date"] = df["event_ts"].dt.date
+
+logger.info("Silver cleanup reduced rows from %d to %d", initial_count, len(df))
+logger.info("Writing silver file: s3://%s/%s", S3_BUCKET_NAME, SILVER_KEY)
 
 csv_buffer = StringIO()
 df.to_csv(csv_buffer, index=False)

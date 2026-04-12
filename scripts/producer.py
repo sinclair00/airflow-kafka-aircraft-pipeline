@@ -2,6 +2,7 @@ import json
 import random
 import uuid
 from datetime import datetime, timezone
+
 from kafka import KafkaProducer
 import logging
 
@@ -27,6 +28,8 @@ def main():
         statuses = ["open", "in_progress", "closed"]
         locations = ["San Diego", "Seattle", "Everett", "Mesa"]
 
+        futures = []
+
         for _ in range(100):
             event = {
                 "event_id": str(uuid.uuid4()),
@@ -43,10 +46,15 @@ def main():
                 "notes": "simulated maintenance event",
             }
 
-        producer.send("aircraft_maintenance_events", event)
+            futures.append(producer.send("aircraft_maintenance_events", event))
+
+        success_count = 0
+        for future in futures:
+            future.get(timeout=10)
+            success_count += 1
+
         producer.flush()
-        logger.info("Produced 100 events")
-        pass
+        logger.info("Produced %d confirmed events", success_count)
 
     finally:
         producer.close()
