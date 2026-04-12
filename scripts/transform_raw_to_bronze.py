@@ -11,12 +11,12 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-logger.info("Starting validate_events")
+logger.info("Starting transform_raw_to_bronze")
 
 S3_BUCKET_NAME = os.environ["S3_BUCKET_NAME"]
 RAW_PREFIX = os.environ.get("RAW_PREFIX", "raw/aircraft_events/")
-VALIDATION_REPORT_KEY = os.environ.get(
-    "VALIDATION_REPORT_KEY", "analytics/aircraft_events/validation_report.txt"
+BRONZE_KEY = os.environ.get(
+    "BRONZE_KEY", "bronze/aircraft_events/maintenance_events_bronze.csv"
 )
 
 s3 = boto3.client("s3")
@@ -36,7 +36,7 @@ if not raw_files:
 latest_obj = max(raw_files, key=lambda x: x["LastModified"])
 latest_key = latest_obj["Key"]
 
-logger.info("Validating raw file: s3://%s/%s", S3_BUCKET_NAME, latest_key)
+logger.info("Reading raw file: s3://%s/%s", S3_BUCKET_NAME, latest_key)
 
 obj = s3.get_object(Bucket=S3_BUCKET_NAME, Key=latest_key)
 content = obj["Body"].read().decode("utf-8")
@@ -52,44 +52,22 @@ if not rows:
         f"No records found in raw file: s3://{S3_BUCKET_NAME}/{latest_key}"
     )
 
-df = pd.DataFrame(rows)
+df = pd.DataFrame(rows).copy()
 
-required_cols = [
-    "event_id",
-    "event_ts",
-    "aircraft_id",
-    "component",
-    "event_type",
-    "severity",
-    "status",
-    "location",
-]
+# Bronze = light standardization only
+df["event_ts"] = pd.to_datetime(df["event_ts"], errors="coerce")
+df["ingested_at"] = pd.Timestamp.utcnow()
+df["source_file"] = latest_key
 
-missing_cols = [c for c in required_cols if c not in df.columns]
-if missing_cols:
-    raise ValueError(f"Missing required columns: {missing_cols}")
-
-null_counts = df[required_cols].isnull().sum()
-dup_count = df["event_id"].duplicated().sum()
-
-report_lines = [
-    f"Validated file: s3://{S3_BUCKET_NAME}/{latest_key}",
-    f"Row count: {len(df)}",
-    f"Duplicate event_id count: {dup_count}",
-    "Null counts:",
-    null_counts.to_string(),
-]
-
-report_text = "\n".join(report_lines)
+csv_buffer = StringIO()
+df.to_csv(csv_buffer, index=False)
 
 s3.put_object(
     Bucket=S3_BUCKET_NAME,
-    Key=VALIDATION_REPORT_KEY,
-    Body=report_text.encode("utf-8"),
-    ContentType="text/plain",
+    Key=BRONZE_KEY,
+    Body=csv_buffer.getvalue(),
+    ContentType="text/csv",
 )
 
-logger.info("Validation complete.")
-logger.info(
-    "Validation report written to s3://%s/%s", S3_BUCKET_NAME, VALIDATION_REPORT_KEY
-)
+logger.info("Bronze data written to s3://%s/%s", S3_BUCKET_NAME, BRONZE_KEY)
+logger.info("Bronze row count: %s", len(df))

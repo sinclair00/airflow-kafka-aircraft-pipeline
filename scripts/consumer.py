@@ -13,15 +13,15 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-
     logger.info("Starting consumer process")
 
     s3 = boto3.client("s3")
 
-    bucket = os.getenv("S3_BUCKET")
-    raw_prefix = os.getenv("S3_RAW_PREFIX", "raw")
+    S3_BUCKET_NAME = os.environ["S3_BUCKET_NAME"]
+    RAW_PREFIX = os.getenv("RAW_PREFIX", "raw/aircraft_events/")
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    s3_key = f"{raw_prefix}/events_{timestamp}.jsonl"
+    s3_key = f"{RAW_PREFIX}events_{timestamp}.jsonl"
 
     consumer = KafkaConsumer(
         "aircraft_maintenance_events",
@@ -34,24 +34,29 @@ def main():
     )
 
     count = 0
+    lines = []
 
     try:
-        lines = []
+        logger.info("Target raw file: s3://%s/%s", S3_BUCKET_NAME, s3_key)
 
         for message in consumer:
             event = message.value
             lines.append(json.dumps(event))
             count += 1
 
-            if lines:
-                payload = "\n".join(lines) + "\n"
+        if lines:
+            payload = "\n".join(lines) + "\n"
 
-                s3.put_object(Bucket=bucket, Key=s3_key, Body=payload.encode("utf-8"))
+            s3.put_object(
+                Bucket=S3_BUCKET_NAME,
+                Key=s3_key,
+                Body=payload.encode("utf-8"),
+                ContentType="application/json",
+            )
 
-                logger.info("Wrote %d events to s3://%s/%s", count, bucket, s3_key)
-
-            else:
-                logger.info("No events consumed during this run; skipping S3 write.")
+            logger.info("Wrote %d events to s3://%s/%s", count, S3_BUCKET_NAME, s3_key)
+        else:
+            logger.info("No events consumed during this run; skipping S3 write.")
 
     finally:
         consumer.close()
