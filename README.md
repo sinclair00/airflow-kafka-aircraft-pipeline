@@ -1,26 +1,48 @@
 # Aircraft Maintenance Data Pipeline (Kafka + Airflow)
 
-Streaming + batch data pipeline that ingests aircraft maintenance events 
-via Kafka and processes them into validated, curated, and aggregated datasets using Airflow.
+Streaming + batch data pipeline that ingests aircraft maintenance events via Kafka 
+and processes them into validated, curated, and aggregated datasets using Airflow.
 
+The system is designed to simulate real-world data engineering challenges including 
+Kafka offset management, idempotent ingestion, and pipeline observability.
+
+This is a personal, independently developed data engineering project. External contributions are not enabled to maintain a consistent architectural vision and implementation approach.
 ---
 
 ## Tech Stack
 
-- Apache Airflow – orchestration
-- Apache Kafka – streaming ingestion
-- Docker Compose – containerized environment
-- Python – data processing scripts
-- Postgres – Airflow metadata database
+- Apache Airflow – orchestration and scheduling
+- Apache Kafka – real-time event streaming
+- Amazon S3 – data lake storage (Bronze/Silver layers)
+- Python – data processing and transformation
+- Docker Compose – containerized local environment
+- PostgreSQL – Airflow metadata database
 
 ## Pipeline
 
-1. **Producer** – publishes aircraft maintenance events to Kafka
-2. **Kafka Broker** – streams event data via topic `aircraft_maintenance_events`
-3. **Consumer** – ingests events and writes raw JSONL files (Bronze layer)
-4. **Validation** – checks data quality and schema compliance
-5. **Transformation** – converts raw data into curated CSV datasets (Silver layer)
-6. **Aggregation** – generates summary reports (Gold layer)
+The pipeline follows a medallion architecture with hybrid streaming and batch processing:
+
+1. **Event Producer**
+   - Publishes aircraft maintenance events to Kafka
+
+2. **Streaming Ingestion (Kafka)**
+   - Topic: `aircraft_maintenance_events`
+   - Consumer group-based ingestion with offset management
+   - Enables decoupled, real-time data flow
+
+3. **Raw Ingestion (Bronze Layer)**
+   - Consumer writes JSONL files to S3
+   - Manifest tracking ensures idempotent ingestion and safe reprocessing
+
+4. **Validation Layer**
+   - Enforces schema and data quality rules
+   - Generates validation reports
+
+5. **Transformation Layer (Silver)**
+   - Converts raw events into structured datasets
+
+6. **Aggregation Layer (Gold)**
+   - Produces daily summaries for analytics
 
 ## Run
 
@@ -38,6 +60,10 @@ Open Airflow UI:
 This architecture integrates real-time event streaming with scheduled batch
 processing, enabling scalable data ingestion and transformation.
 
+The design emphasizes scalability, idempotency, and fault tolerance across streaming and batch components.
+
+Key design considerations include data consistency, replayability, and fault recovery across pipeline stages.
+
 <p align="center">
   <img src="docs/images/architecture_diagram.svg" width="700">
 </p>
@@ -46,8 +72,8 @@ using a medallion architecture (Bronze → Silver → Gold).
 
 ## Notes
 
-* Kafka runs with internal/external listeners
-* Data stored in `/opt/airflow/data`
+- Kafka configured with internal/external listeners for container networking
+- Data persisted via mounted volumes (`/opt/airflow/data`)
 
 ## Pipeline Results
 
@@ -68,8 +94,7 @@ using a medallion architecture (Bronze → Silver → Gold).
 ### Validation Report
 - [Validation Report Sample](docs/samples/validation_report.txt)
 
-The pipeline processes aircraft maintenance events through:
-
+### End-to-End Flow Summary
 - Raw ingestion from Kafka
 - Validation and cleansing
 - Transformation into curated datasets
@@ -82,10 +107,68 @@ The pipeline processes aircraft maintenance events through:
 - Implements medallion architecture (Bronze → Silver → Gold)
 - Uses Docker Compose for reproducible local deployment
 - Integrates Kafka streaming with Airflow orchestration
+- Solves real-world Kafka ingestion and offset management issues
+- Designed with production-style patterns: idempotency, retry logic, and observability
+- Implements idempotent ingestion using manifest tracking
 
-## Challenges & Lessons Learned
+## Key Challenges & Solutions
 
-- Resolved Kafka `NoBrokersAvailable` via advertised listeners configuration
-- Fixed Docker container networking between Airflow and Kafka
-- Addressed file path inconsistencies using absolute container paths
-- Resolved permission issues with mounted volumes
+### Kafka Consumer Only Reading One Message
+**Problem:**  
+Kafka consumer was only processing a single message instead of a continuous stream.
+
+**Root Cause:**  
+Producer send logic was incorrectly scoped, causing only one message to be published per execution.
+
+**Solution:**  
+Refactored producer to send messages in a loop and validated using Kafka topic monitoring.
+
+---
+
+### Offset Management Causing Partial Reads
+**Problem:**  
+Consumers were inconsistently reading messages, leading to missing or duplicate data.
+
+**Root Cause:**  
+Improper offset handling and lack of clear reset strategy.
+
+**Solution:**  
+Implemented controlled offset reset strategy and validated consumer group behavior to ensure full data consumption.
+
+---
+
+### Transition from Local Filesystem to S3 Data Lake
+**Problem:**  
+Initial pipeline relied on local storage, limiting scalability and realism.
+
+**Solution:**  
+Migrated ingestion and transformation layers to Amazon S3:
+- Introduced raw, bronze, and silver layers
+- Enabled persistent, scalable storage
+- Improved pipeline realism to match production architectures
+
+---
+
+### Idempotent Bronze Layer Ingestion
+**Problem:**  
+Risk of duplicate processing when re-running pipelines.
+
+**Solution:**  
+Implemented manifest-based tracking to ensure only new files are processed, making ingestion idempotent.
+
+---
+
+### Observability & Debugging
+**Problem:**  
+Limited visibility into pipeline failures and data issues.
+
+**Solution:**  
+Added:
+- Custom logging
+- Airflow retry logic
+- Improved traceability across pipeline stages
+
+## Future Enhancements
+- Snowflake for warehouse layer
+- dbt for transformation modeling
+- Power BI for reporting layer
