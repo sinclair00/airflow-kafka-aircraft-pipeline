@@ -17,6 +17,7 @@ This is a personal, independently developed data engineering project. External c
 - Python – data processing and transformation
 - Docker Compose – containerized local environment
 - PostgreSQL – Airflow metadata database
+- Snowflake – warehouse layer for analytics-ready data
 
 ## Pipeline
 
