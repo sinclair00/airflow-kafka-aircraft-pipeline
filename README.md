@@ -13,7 +13,7 @@ This is a personal, independently developed data engineering project. External c
 
 - Apache Airflow – orchestration and scheduling
 - Apache Kafka – real-time event streaming
-- Amazon S3 – data lake storage (Bronze/Silver layers)
+- Amazon S3 – medallion data lake storage (RAW/BRONZE/SILVER/GOLD)
 - Python – data processing and transformation
 - Docker Compose – containerized local environment
 - PostgreSQL – Airflow metadata database
@@ -43,7 +43,11 @@ The pipeline follows a medallion architecture with hybrid streaming and batch pr
    - Converts raw events into structured datasets
 
 6. **Aggregation Layer (Gold)**
-   - Produces daily summaries for analytics
+   - Produces daily summaries for analytics and downstream warehouse loading
+
+7. **Snowflake Analytics Layer**
+   - Loads Gold-layer summary data into Snowflake
+   - Supports SQL-based analytics and future BI reporting
 
 ## Run
 
@@ -71,6 +75,8 @@ Key design considerations include data consistency, replayability, and fault rec
 The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) 
 using a medallion architecture (Bronze → Silver → Gold).
 
+Gold-layer summary outputs are loaded into Snowflake for warehouse-based analytics and downstream reporting workflows.
+
 ## Notes
 
 - Kafka configured with internal/external listeners for container networking
@@ -80,6 +86,12 @@ using a medallion architecture (Bronze → Silver → Gold).
 
 ### Airflow Execution
 ![Airflow DAG Success](docs/images/airflow_success.png)
+
+### Snowflake Analytics Layer
+
+Gold-layer summary data is loaded into Snowflake for warehouse-based analytics queries.
+
+![Snowflake Analytics Query](docs/images/snowflake_analytics_query.png)
 
 ### Sample Outputs
 
@@ -98,8 +110,9 @@ using a medallion architecture (Bronze → Silver → Gold).
 ### End-to-End Flow Summary
 - Raw ingestion from Kafka
 - Validation and cleansing
-- Transformation into curated datasets
-- Aggregation into daily summaries
+- Transformation into structured datasets
+- Aggregation into Gold-layer daily summaries
+- Snowflake warehouse analytics integration
 
 
 ## Highlights
@@ -111,6 +124,8 @@ using a medallion architecture (Bronze → Silver → Gold).
 - Solves real-world Kafka ingestion and offset management issues
 - Designed with production-style patterns: idempotency, retry logic, and observability
 - Implements idempotent ingestion using manifest tracking
+- Integrates Snowflake warehouse analytics layer
+- Supports downstream BI/reporting workflows
 
 ## Key Challenges & Solutions
 
@@ -170,6 +185,7 @@ Added:
 - Improved traceability across pipeline stages
 
 ## Future Enhancements
-- Snowflake for warehouse layer
 - dbt for transformation modeling
 - Power BI for reporting layer
+- Databricks lakehouse integration
+- AI/ML notebook-based analytics workflows
