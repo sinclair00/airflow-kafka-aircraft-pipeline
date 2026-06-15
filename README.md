@@ -176,6 +176,38 @@ Gold summary data has been loaded into Snowflake and modeled with dbt into stagi
 Automate the Snowflake load and dbt execution as downstream Airflow tasks so each pipeline batch refreshes the warehouse and reporting marts end-to-end.
 
 
+## Power BI Dashboard
+
+This project includes a Power BI executive dashboard connected to the Snowflake/dbt gold mart.
+
+The dashboard visualizes maintenance KPI data from:
+
+`AIRCRAFT_MAINTENANCE_DB.GOLD.MART_MAINTENANCE_KPIS`
+
+Report file:
+
+```text
+powerbi/aircraft_maintenance_executive_dashboard.pbix
+```
+
+Dashboard screenshot:
+
+![Aircraft Maintenance Executive Dashboard](docs/images/powerbi_aircraft_maintenance_dashboard.png)
+
+The report includes:
+
+* Total maintenance events card
+* Events by component and severity bar chart
+* Component status summary matrix
+* Severity slicer
+
+This completes the visualization layer of the pipeline:
+
+```text
+Kafka → Airflow/Python → S3 Medallion → Snowflake → dbt → Power BI
+```
+
+
 ---
 
 ## Highlights
@@ -250,7 +282,6 @@ Added:
 - Improved traceability across pipeline stages
 
 ## Future Enhancements
-- Power BI reporting and executive dashboard layer
 - Databricks lakehouse integration
 - Azure AI/ML notebook-based analytics workflows
 - Azure AI Search integration
