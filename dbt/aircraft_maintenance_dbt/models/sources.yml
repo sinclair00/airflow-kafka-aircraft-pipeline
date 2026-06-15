@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: gold
+    database: AIRCRAFT_MAINTENANCE_DB
+    schema: GOLD
+
+    tables:
+      - name: DAILY_MAINTENANCE_SUMMARY

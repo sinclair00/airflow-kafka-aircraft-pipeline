@@ -22,3 +22,9 @@ data/
 
 #Snowflake
 snowsql-installer.bash
+
+# Snowflake / authentication
+*.p8
+*.pem
+*.key
+

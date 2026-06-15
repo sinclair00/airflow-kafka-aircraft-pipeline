@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_maintenance_summary
+    columns:
+      - name: severity
+        tests:
+          - not_null
+
+      - name: status
+        tests:
+          - not_null
+
+  - name: mart_fleet_health
+    columns:
+      - name: component
+        tests:
+          - not_null
+
+      - name: total_events
+        tests:
+          - not_null
+
+  - name: mart_maintenance_kpis
+    columns:
+      - name: total_events
+        tests:
+          - not_null
+
+  - name: mart_reliabilty_metrics
+    columns:
+      - name: component
+        tests:
+          - not_null
+
+      - name: total_events
+        tests:
+          - not_null
+
+  - name: mart_severity_status_summary
+    columns:
+      - name: total_events
+        tests:
+          - not_null
+
+
