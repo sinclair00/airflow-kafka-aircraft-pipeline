@@ -7,6 +7,7 @@ The system is designed to simulate real-world data engineering challenges includ
 Kafka offset management, idempotent ingestion, and pipeline observability.
 
 This is a personal, independently developed data engineering project. External contributions are not enabled to maintain a consistent architectural vision and implementation approach.
+
 ---
 
 ## Tech Stack
@@ -19,6 +20,7 @@ This is a personal, independently developed data engineering project. External c
 - PostgreSQL – Airflow metadata database
 - Snowflake – warehouse layer for analytics-ready data
 - dbt – semantic modeling, testing, and lineage
+- Power BI – executive dashboard and reporting layer
 
 ## Pipeline
 
@@ -72,17 +74,27 @@ Open Airflow UI:
 This architecture integrates real-time event streaming with scheduled batch
 processing, enabling scalable data ingestion and transformation.
 
-The design emphasizes scalability, idempotency, and fault tolerance across streaming and batch components.
+The design emphasizes scalability, idempotent processing, controlled replay, data consistency, and fault recovery across streaming and batch pipeline stages.
 
-Key design considerations include data consistency, replayability, and fault recovery across pipeline stages.
+### Architecture Page 1 — Ingestion and Orchestration
 
 <p align="center">
-  <img src="docs/images/architecture_diagram.svg" width="700">
+  <img src="docs/images/aircraft_pipeline_architecture_page1.svg" width="700">
 </p>
-The pipeline combines real-time ingestion (Kafka) with batch orchestration (Airflow) 
-using a medallion architecture (Raw → Bronze → Silver → Gold).
 
-Gold-layer summary outputs are loaded into Snowflake for warehouse-based analytics and downstream reporting workflows.
+### Architecture Page 2 — Storage, Warehouse, Modeling, and Reporting
+
+<p align="center">
+  <img src="docs/images/aircraft_pipeline_architecture_page2.svg" width="700">
+</p>
+
+The pipeline combines real-time ingestion with batch orchestration using a medallion architecture:
+
+**Kafka → Airflow/Python → S3 Medallion → Snowflake → dbt → Power BI**
+
+Gold-layer summary outputs are loaded into Snowflake for warehouse-based analytics, modeled with dbt, and visualized in Power BI.
+
+---
 
 ## Notes
 
