@@ -17,7 +17,7 @@ services:
       - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: aircraft-kafka-jmx:7.5.0
     depends_on:
       - zookeeper
     ports:
@@ -31,6 +31,7 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OPTS: "-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=7071:/opt/jmx-exporter/kafka.yml"
       
 
   airflow-init:
@@ -106,3 +107,20 @@ services:
       - ./dags:/opt/airflow/dags
       - ./scripts:/opt/airflow/scripts
       - ./data:/opt/airflow/data
+
+  prometheus:
+    image: prom/prometheus:v3.12.0
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+
+volumes:
+  prometheus-data:
