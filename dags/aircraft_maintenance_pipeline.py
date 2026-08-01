@@ -1,8 +1,7 @@
-from datetime import datetime
-from airflow import DAG
-from airflow.operators.bash import BashOperator
+from datetime import datetime, timedelta
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
 
-from datetime import timedelta
 
 default_args = {
     "retries": 1,
@@ -12,7 +11,7 @@ default_args = {
 with DAG(
     dag_id="aircraft_maintenance_pipeline",
     start_date=datetime(2025, 1, 1),
-    schedule_interval=None,
+    schedule=None,
     catchup=False,
     default_args=default_args,
     tags=["kafka", "s3", "elt"],
