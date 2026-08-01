@@ -1,13 +1,16 @@
-# Prometheus Kafka Validation Runbook
+# Prometheus Kafka KRaft Validation Runbook
+
+**Last updated:** 2026-07-31
 
 ## Purpose
 
-This runbook validates that the aircraft maintenance pipeline can produce Kafka messages and that Prometheus can observe those messages through the Kafka JMX Exporter.
+This runbook validates that the aircraft maintenance pipeline can produce messages through the Kafka KRaft broker and that Prometheus can observe those messages through the Kafka JMX Exporter.
 
 Use this runbook when you need to prove the following path is working:
 
 ```text
 Airflow DAG
+  → Kafka KRaft broker
   → Kafka topic: aircraft_maintenance_events
   → Kafka JMX Exporter
   → Prometheus
@@ -18,7 +21,8 @@ Airflow DAG
 
 By the end of this runbook, you should have evidence that:
 
-- The Docker Compose stack is running.
+- The Docker Compose stack is running without ZooKeeper.
+- Kafka is operating in KRaft mode.
 - Prometheus can scrape both itself and Kafka.
 - The `aircraft_maintenance_pipeline` DAG completes successfully.
 - The Kafka topic `aircraft_maintenance_events` exists.
@@ -49,19 +53,15 @@ Start from the project root:
 cd ~/projects/airflow-kafka-aircraft-pipeline
 ```
 
-## 1. Start the Stack
+## 1. Start or Reconcile the Stack
 
-If the containers already exist, start them:
-
-```bash
-docker compose start
-```
-
-If some containers do not exist yet, create and start them:
+Use Docker Compose to create, start, or reconcile the current KRaft-based services:
 
 ```bash
 docker compose up -d
 ```
+
+This is preferred over `docker compose start` after configuration changes because it applies the current Compose definition while preserving named volumes.
 
 ## 2. Verify Services Are Running
 
@@ -75,7 +75,6 @@ Expected running services:
 
 ```text
 postgres
-zookeeper
 kafka
 prometheus
 airflow-webserver
@@ -84,11 +83,50 @@ airflow-scheduler
 
 Notes:
 
+- There should be no ZooKeeper service in the current stack.
 - `airflow-init` may be exited. That is normal.
 - Prometheus should expose the UI on `localhost:9090`.
 - Airflow should expose the UI on `localhost:8080`.
 
-## 3. Verify Prometheus Targets
+
+## 3. Verify Kafka Is Running in KRaft Mode
+
+Because the Kafka container has `KAFKA_OPTS` configured for the JMX Exporter Java agent, clear `KAFKA_OPTS` when running Kafka command-line tools.
+
+Run:
+
+```bash
+docker compose exec kafka env KAFKA_OPTS= \
+  kafka-metadata-quorum \
+  --bootstrap-server localhost:9092 \
+  describe --status
+```
+
+Expected output includes KRaft quorum information such as:
+
+```text
+ClusterId:
+LeaderId:
+CurrentVoters:
+```
+
+For this single-node project, the leader should be broker/controller node `1`.
+
+You can also confirm that Kafka started successfully:
+
+```bash
+docker compose logs --tail=100 kafka
+```
+
+Look for:
+
+```text
+Kafka Server started
+```
+
+Do not continue until Kafka is running and the metadata quorum responds.
+
+## 4. Verify Prometheus Targets
 
 Open:
 
@@ -109,7 +147,7 @@ Save a screenshot as:
 docs/images/prometheus/prometheus-targets-up.png
 ```
 
-## 4. Verify the Airflow DAG Exists
+## 5. Verify the Airflow DAG Exists
 
 Run:
 
@@ -137,7 +175,7 @@ Expected result:
 aircraft_maintenance_pipeline | False
 ```
 
-## 5. Trigger the Airflow DAG
+## 6. Trigger the Airflow DAG
 
 Run:
 
@@ -152,7 +190,7 @@ Expected immediate state:
 queued
 ```
 
-## 6. Confirm the DAG Succeeded
+## 7. Confirm the DAG Succeeded
 
 Wait 30–60 seconds, then run:
 
@@ -178,7 +216,7 @@ docs/images/prometheus/airflow-dag-success.png
 
 Preferred screenshot: use the Airflow web UI instead of a terminal screenshot because it is clearer for portfolio review.
 
-## 7. Verify the Kafka Topic Exists
+## 8. Verify the Kafka Topic Exists
 
 Because the Kafka container has `KAFKA_OPTS` configured for the JMX Exporter Java agent, clear `KAFKA_OPTS` when running Kafka command-line tools. Otherwise the CLI tool may try to start another JMX Exporter instance and fail with a port conflict on `7071`.
 
@@ -201,7 +239,7 @@ You may also see:
 __consumer_offsets
 ```
 
-## 8. Verify Kafka Topic Offsets
+## 9. Verify Kafka Topic Offsets
 
 Run:
 
@@ -227,7 +265,7 @@ aircraft_maintenance_events:0:200
 
 The final number is the current end offset. A value greater than `0` confirms that Kafka has received messages on the topic.
 
-## 9. Verify the JMX Exporter Topic Metric Directly
+## 10. Verify the JMX Exporter Topic Metric Directly
 
 Run:
 
@@ -244,7 +282,7 @@ kafka_server_brokertopicmetrics_messagesin_total{topic="aircraft_maintenance_eve
 
 A value greater than `0` confirms that the Kafka JMX Exporter exposes the project topic message counter.
 
-## 10. Query Prometheus for the Topic Counter
+## 11. Query Prometheus for the Topic Counter
 
 Open Prometheus:
 
@@ -258,13 +296,13 @@ Run this query:
 kafka_server_brokertopicmetrics_messagesin_total{topic="aircraft_maintenance_events"}
 ```
 
-Expected result:
+Expected result after a successful 100-event validation run:
 
 ```text
-greater than 0
+100
 ```
 
-This proves Prometheus can see the Kafka topic counter.
+A later run may produce a larger cumulative value. Any value greater than `0` proves Prometheus can see the Kafka topic counter.
 
 Recommended screenshot filename:
 
@@ -272,7 +310,7 @@ Recommended screenshot filename:
 docs/images/prometheus/prometheus-query-aircraft-topic-total.png
 ```
 
-## 11. Query Prometheus for 10-Minute Message Activity
+## 12. Query Prometheus for 10-Minute Message Activity
 
 Run this query:
 
@@ -294,7 +332,7 @@ Recommended screenshot filename:
 docs/images/prometheus/prometheus-query-aircraft-topic-increase.png
 ```
 
-## 12. Optional Broader Context Query
+## 13. Optional Broader Context Query
 
 For README evidence, this broader query can be useful because it shows aggregate Kafka activity, internal Kafka activity, and project topic activity together:
 
@@ -302,17 +340,15 @@ For README evidence, this broader query can be useful because it shows aggregate
 increase(kafka_server_brokertopicmetrics_messagesin_total[10m])
 ```
 
-Expected result:
+The number of returned series can vary because Kafka may expose internal-topic activity in addition to the project topic.
 
-```text
-Result series: 3
-```
-
-The result should include a row for:
+The result must include a row for:
 
 ```text
 topic="aircraft_maintenance_events"
 ```
+
+That project-topic series should show a value greater than `0` when the Airflow run occurred inside the selected time window.
 
 Recommended screenshot filename:
 
@@ -322,7 +358,7 @@ docs/images/prometheus/prometheus-query-message-increase.png
 
 This is often the best portfolio screenshot because it shows context and confirms the project topic is active.
 
-## 13. Why the 10-Minute Increase Can Vary
+## 14. Why the 10-Minute Increase Can Vary
 
 The `increase()` value may change slightly each time the query runs. That is normal.
 
@@ -334,7 +370,7 @@ For screenshots, the important requirement is:
 aircraft_maintenance_events > 0
 ```
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 ### Prometheus query returns 0
 
@@ -387,21 +423,35 @@ docker compose ps kafka
 Check Kafka logs:
 
 ```bash
-docker compose logs --tail=100 kafka
+docker compose logs --tail=150 kafka
 ```
 
-If Kafka exited with a ZooKeeper `NodeExists` error, restart ZooKeeper and Kafka:
+Verify the KRaft metadata quorum:
 
 ```bash
-docker compose restart zookeeper
-docker compose up -d kafka
+docker compose exec kafka env KAFKA_OPTS= \
+  kafka-metadata-quorum \
+  --bootstrap-server localhost:9092 \
+  describe --status
 ```
 
-Then recheck:
+If Kafka is not healthy, restart only the Kafka service:
+
+```bash
+docker compose restart kafka
+```
+
+Then recheck the container and Prometheus target:
+
+```bash
+docker compose ps kafka
+```
 
 ```text
 http://localhost:9090/targets
 ```
+
+Do not restart or troubleshoot ZooKeeper. The current architecture uses KRaft and has no ZooKeeper service.
 
 ### Prometheus is not reachable
 
@@ -423,14 +473,14 @@ Expected:
 Prometheus Server is Ready.
 ```
 
-## 15. README Section Template
+## 16. README Section Template
 
 Use this section in `monitoring/README.md` or the root `README.md`, adjusting image paths as needed.
 
 ```markdown
-### Airflow DAG Success
+### Kafka KRaft and Airflow Validation
 
-This confirms that the `aircraft_maintenance_pipeline` DAG completed successfully before validating Kafka message activity in Prometheus.
+The Kafka broker runs in KRaft mode without ZooKeeper. This confirms that the `aircraft_maintenance_pipeline` DAG completed successfully before validating Kafka message activity in Prometheus.
 
 ![Airflow DAG run success](../docs/images/prometheus/airflow-dag-success.png)
 
@@ -446,7 +496,7 @@ Path note:
 - From `monitoring/README.md`, use paths such as `../docs/images/prometheus/<file>.png`.
 - From root `README.md`, use paths such as `docs/images/prometheus/<file>.png`.
 
-## 16. Commit the Evidence
+## 17. Commit the Evidence
 
 Check Git status:
 
@@ -478,7 +528,7 @@ Push:
 git push origin main
 ```
 
-## 17. Safe Shutdown
+## 18. Safe Shutdown
 
 Use `stop`, not `down`, when taking a break:
 
@@ -494,6 +544,6 @@ docker compose down -v
 
 Reason:
 
-- `docker compose stop` preserves containers and runtime state.
-- `docker compose down` removes containers.
-- `docker compose down -v` removes named volumes, including Prometheus history.
+- `docker compose stop` preserves containers and named-volume data.
+- `docker compose down` removes containers and the Compose network but normally preserves named volumes.
+- `docker compose down -v` removes named volumes, including Kafka KRaft data and Prometheus history.
