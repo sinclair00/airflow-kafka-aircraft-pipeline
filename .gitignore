@@ -28,3 +28,6 @@ snowsql-installer.bash
 *.pem
 *.key
 
+
+# Local database backups
+/backups/
