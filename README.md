@@ -299,19 +299,37 @@ Implemented manifest-based tracking to ensure only new files are processed, maki
 ---
 
 ### Observability & Debugging
+
 **Problem:**  
-Limited visibility into pipeline failures and data issues.
+Limited visibility into Kafka broker health, message activity, pipeline failures, and data issues.
 
 **Solution:**  
 Added:
-- Custom logging
+
+- Custom application logging
 - Airflow retry logic
-- Improved traceability across pipeline stages
+- Kafka JMX Exporter metrics
+- Prometheus scraping and target validation
+- Provisioned Grafana Prometheus data source
+- Provisioned Kafka overview dashboard
+- Kafka target health and recent message-activity panels
+- Monitoring screenshots and validation runbooks
+
+![Grafana Kafka overview dashboard](docs/images/grafana/grafana-kafka-overview-dashboard.png)
 
 ## Future Enhancements
-- Databricks lakehouse integration
-- Azure AI/ML notebook-based analytics workflows
-- Azure AI Search integration
-- GraphQL data access layer
 
+- Add Prometheus alert rules and Grafana alerting
+- Add Alertmanager notification routing
+- Add monitoring for Airflow, PostgreSQL, and pipeline task failures
+- Add automated health checks and expanded operational dashboards
+- Add CI/CD validation for Docker Compose, Python, dbt, and configuration files
+- Add infrastructure-as-code deployment with Terraform
+- Add schema validation and data-quality checks
+- Add Kafka Schema Registry and stronger event-contract governance
+- Add Databricks lakehouse integration
+- Add automated Databricks jobs for medallion-layer processing
+- Add Azure AI/ML notebook-based analytics workflows
+- Add Azure AI Search integration
+- Add a GraphQL data-access layer
 
