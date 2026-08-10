@@ -88,10 +88,10 @@ The design emphasizes scalability, idempotent processing, controlled replay, dat
   <img src="docs/images/architecture/aircraft_pipeline_architecture_page2.svg" width="700">
 </p>
 
-The pipeline combines real-time ingestion with batch orchestration using a medallion architecture:
+The platform combines real-time ingestion, batch orchestration, medallion-layer processing, warehouse modeling, reporting, and operational observability:
 
 **Kafka → Airflow/Python → S3 Medallion → Snowflake → dbt → Power BI**
-
+Kafka metrics → JMX Exporter → Prometheus → Grafana
 Gold-layer summary outputs are loaded into Snowflake for warehouse-based analytics, modeled with dbt, and visualized in Power BI.
 
 ---

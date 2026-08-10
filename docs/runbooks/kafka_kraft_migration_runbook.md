@@ -24,9 +24,11 @@ The Docker Compose stack contains:
 - Kafka in combined KRaft broker and controller mode
 - Kafka JMX Exporter
 - Prometheus
+- Grafana
 - PostgreSQL
+- Airflow API server
 - Airflow scheduler
-- Airflow webserver
+- Airflow DAG processor
 - Airflow initialization service
 
 ZooKeeper is no longer present in `docker-compose.yml`.
@@ -325,12 +327,13 @@ Do not delete the named rollback volumes until the KRaft deployment has remained
 * The old ZooKeeper container was removed only after the rollback volumes were validated.
 * Removing the container without `-v` did not delete its original anonymous volumes.
 * The underscore warning for `aircraft_maintenance_events` is informational because the topic name does not also contain periods.
+* Architecture diagrams updated for the KRaft-based design and observability stack.
 
-## Follow-Up Work
+## Follow-Up Work Completed
 
-1. Capture updated KRaft and Airflow screenshots.
-2. Update architecture diagrams to remove ZooKeeper.
-3. Add an architecture decision record for the KRaft migration.
-4. Upgrade the project to Airflow 3.
-5. Revalidate all DAG commands after the Airflow upgrade.
-6. Add Grafana dashboards.
+1. Captured updated KRaft and Airflow screenshots.
+2. Updated architecture diagrams for the KRaft-based design and observability stack.
+3. Added an architecture decision record for the KRaft migration.
+4. Upgraded the project to Airflow 3.
+5. Revalidated all DAG commands after the Airflow upgrade.
+6. Added Grafana dashboards.
