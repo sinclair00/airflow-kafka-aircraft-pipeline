@@ -12,15 +12,17 @@ This is a personal, independently developed data engineering project. External c
 
 ## Tech Stack
 
-- Apache Airflow – orchestration and scheduling
-- Apache Kafka – real-time event streaming
-- S3 stores pipeline outputs across `raw/`, `bronze/`, `silver/`, and `gold/` layers, with `metadata/` used for manifest tracking and `analytics/` reserved for reporting-ready outputs.
+- Apache Airflow 3 – orchestration and scheduling
+- Apache Kafka (KRaft) – real-time event streaming
+- S3 – medallion-layer storage across `raw/`, `bronze/`, `silver/`, and `gold/`, with `metadata/` for manifest tracking and `analytics/` reserved for reporting-ready outputs
 - Python – data processing and transformation
 - Docker Compose – containerized local environment
 - PostgreSQL – Airflow metadata database
 - Snowflake – warehouse layer for analytics-ready data
 - dbt – semantic modeling, testing, and lineage
 - Power BI – executive dashboard and reporting layer
+- Prometheus – Kafka metrics scraping and health validation
+- Grafana – operational dashboards and observability
 
 ## Pipeline
 
@@ -222,7 +224,6 @@ This completes the visualization layer of the pipeline:
 Kafka → Airflow/Python → S3 Medallion → Snowflake → dbt → Power BI
 ```
 
-
 ---
 
 ## Highlights
@@ -230,14 +231,14 @@ Kafka → Airflow/Python → S3 Medallion → Snowflake → dbt → Power BI
 - Demonstrates real-time + batch hybrid data pipeline design
 - Implements medallion architecture (Bronze → Silver → Gold)
 - Uses Docker Compose for reproducible local deployment
-- Integrates Kafka streaming with Airflow orchestration
-- Solves real-world Kafka ingestion and offset management issues
-- Designed with production-style patterns: idempotency, retry logic, and observability
+- Integrates Kafka KRaft streaming with Airflow 3 orchestration
+- Solves Kafka ingestion, consumer offset, and replay-management issues
 - Implements idempotent ingestion using manifest tracking
 - Integrates Snowflake warehouse analytics layer
-- Supports downstream BI/reporting workflows
-- Implements dbt semantic modeling layer
-- Includes automated dbt testing and lineage documentation
+- Implements dbt semantic modeling, testing, and lineage documentation
+- Supports downstream Power BI reporting workflows
+- Adds Kafka observability with JMX Exporter, Prometheus, and Grafana
+- Uses production-style patterns for retries, fault recovery, monitoring, and operational validation
 
 ## Runbooks
 
